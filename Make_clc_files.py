@@ -167,16 +167,20 @@ def main():
                     continue  # skip empty tiles (ocean / outside coverage)
 
                 base = f"{latI}_{lonI}.bin"
+                # Group into 5-degree latitude subfolders (GitHub 1000-file limit)
+                band = (latI // 5) * 5
+                subdir = os.path.join(args.output_dir, f"lat{band}")
+                os.makedirs(subdir, exist_ok=True)
                 if args.gzip:
-                    path = os.path.join(args.output_dir, base + ".gz")
+                    path = os.path.join(subdir, base + ".gz")
                     with gzip.open(path, "wb") as f:
                         f.write(tile.tobytes())
                 else:
-                    path = os.path.join(args.output_dir, base)
+                    path = os.path.join(subdir, base)
                     with open(path, "wb") as f:
                         f.write(tile.tobytes())
                 written += 1
-                print(f"  wrote {base}  ({tile.astype(bool).sum()} non-zero px)")
+                print(f"  wrote lat{band}/{base}  ({tile.astype(bool).sum()} non-zero px)")
 
         print(f"\nDone. {written} tile(s) written to {args.output_dir}")
         if args.gzip:
